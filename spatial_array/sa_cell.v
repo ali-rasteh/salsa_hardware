@@ -6,8 +6,10 @@ the uppest cell receives the whole set of weights and each cell pops its weight 
 - Could contain the values of calculated outputs from all above cell to be spit out at the most bottom cell.
 */
 
-// `include "mult_IEEE754.v"
-// `include "add_IEEE754.v"
+
+
+`include "mult_IEEE754.v"
+`include "add_IEEE754.v"
 
 
 
@@ -21,6 +23,7 @@ module sa_cell #(parameter DATA_WIDTH = 32, MODE_WIDTH=1, CTRL_WIDTH = 3, MOVE_B
     input [DATA_WIDTH-1:0] up,
     input [DATA_WIDTH-1:0] move_buff_in,
     input move_buff_in_valid,
+
     output reg [DATA_WIDTH-1:0] right,
     output reg [DATA_WIDTH-1:0] down,
     output reg [DATA_WIDTH-1:0] move_buff_out,
@@ -86,9 +89,17 @@ module sa_cell #(parameter DATA_WIDTH = 32, MODE_WIDTH=1, CTRL_WIDTH = 3, MOVE_B
             end
 
             state <= 0;
+            move_buff_push_index <= 0;
+            move_buff_pop_index <= 0;
+            mult_in_1 <= 0;
+            mult_in_2 <= 0;
+            add_in_1 <= 0;
+            add_in_2 <= 0;
 
+            right <= 0;
+            down <= 0;
             move_buff_out <= 0;
-
+            move_buff_out_valid <= 0;
 
 
 
