@@ -1,4 +1,4 @@
-module fp_multiplier_32bit #(parameter WIDTH = 32) (
+module mult_IEEE754_32bit #(parameter WIDTH = 32) (
     input  [WIDTH-1:0] a,    // WIDTH-bit floating-point input a
     input  [WIDTH-1:0] b,    // WIDTH-bit floating-point input b
     output [WIDTH-1:0] product // WIDTH-bit floating-point product
@@ -17,14 +17,17 @@ module fp_multiplier_32bit #(parameter WIDTH = 32) (
     wire [7:0] exp_product = exp_a + exp_b - 127; // Bias adjustment
 
     // Normalize the product
-    wire [22:0] mant_normalized;
-    wire [7:0] exp_normalized;
-    if (mant_product[47]) begin
-        mant_normalized = mant_product[46:24];
-        exp_normalized = exp_product + 1;
-    end else begin
-        mant_normalized = mant_product[45:23];
-        exp_normalized = exp_product;
+    reg [22:0] mant_normalized;
+    reg [7:0] exp_normalized;
+
+    always @(*) begin
+        if (mant_product[47]) begin
+            mant_normalized = mant_product[46:24];
+            exp_normalized = exp_product + 1;
+        end else begin
+            mant_normalized = mant_product[45:23];
+            exp_normalized = exp_product;
+        end
     end
 
     // Combine the normalized values into the final product
