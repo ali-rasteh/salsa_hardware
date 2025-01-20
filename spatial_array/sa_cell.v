@@ -24,10 +24,10 @@ module sa_cell #(parameter DATA_WIDTH = 32, MODE_WIDTH=1, CTRL_WIDTH = 3, MOVE_B
     input [DATA_WIDTH-1:0] move_buff_in,
     input move_buff_in_valid,
 
-    output reg [DATA_WIDTH-1:0] right,
-    output reg [DATA_WIDTH-1:0] down,
-    output reg [DATA_WIDTH-1:0] move_buff_out,
-    output reg move_buff_out_valid
+    output reg [DATA_WIDTH-1:0] right = 0,
+    output reg [DATA_WIDTH-1:0] down = 0,
+    output reg [DATA_WIDTH-1:0] move_buff_out = 0,
+    output reg move_buff_out_valid = 0
 );
 
     parameter REUSE_BUFF_DEPTH = 2;
@@ -43,19 +43,19 @@ module sa_cell #(parameter DATA_WIDTH = 32, MODE_WIDTH=1, CTRL_WIDTH = 3, MOVE_B
     reg [DATA_WIDTH-1:0] move_buff [MOVE_BUFF_DEPTH-1:0];
     reg [DATA_WIDTH-1:0] result_buff [RESULT_BUFF_DEPTH-1:0];
 
-    reg [$clog2(STATE_DEPTH)-1:0] state;
-    reg [$clog2(MOVE_BUFF_DEPTH)-1:0] move_buff_push_index;
-    reg [$clog2(MOVE_BUFF_DEPTH)-1:0] move_buff_pop_index;
+    reg [$clog2(STATE_DEPTH)-1:0] state = 0;
+    reg [$clog2(MOVE_BUFF_DEPTH)-1:0] move_buff_push_index = 0;
+    reg [$clog2(MOVE_BUFF_DEPTH)-1:0] move_buff_pop_index = 0;
 
 
-    reg [DATA_WIDTH-1:0] mult_in_1;
-    reg [DATA_WIDTH-1:0] mult_in_2;
-    wire [DATA_WIDTH-1:0] mult_out;
-    reg [DATA_WIDTH-1:0] add_in_1;
-    reg [DATA_WIDTH-1:0] add_in_2;
-    wire [DATA_WIDTH-1:0] add_out;
+    reg [DATA_WIDTH-1:0] mult_in_1 = 0;
+    reg [DATA_WIDTH-1:0] mult_in_2 = 0;
+    wire [DATA_WIDTH-1:0] mult_out = 0;
+    reg [DATA_WIDTH-1:0] add_in_1 = 0;
+    reg [DATA_WIDTH-1:0] add_in_2 = 0;
+    wire [DATA_WIDTH-1:0] add_out = 0;
 
-    integer i;
+    integer i = 0;
 
 
 
