@@ -7,6 +7,9 @@ the uppest cell receives the whole set of weights and each cell pops its weight 
 */
 
 
+// TODO: add support for real values
+// develop the movement buffer
+
 
 `include "mult_IEEE754.v"
 `include "add_IEEE754.v"
