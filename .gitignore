@@ -1,5 +1,18 @@
+# Python files
+env/
+myenv/
+__pycache__/
+
+
+# HDL and Vitis HLS files
 sim/
 *.wlf
 *.mpf
 *.mti
 *.out
+
+
+# Others
+test.py
+
+
