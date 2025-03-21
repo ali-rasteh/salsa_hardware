@@ -1,38 +1,24 @@
 #include <hls_stream.h>
-#include <ap_int.h>
+#include <iostream>
+using namespace std;
 
+#define N 1024              // Input size
+#define KERNEL_SIZE 8     // Kernel size
 
-// extern "C" {
+// Top-level function for HLS synthesis
+// The following directive instructs the HLS tool to limit the number of multiplier units used in operations.
+void conv1D(const int input[N], const int kernel[KERNEL_SIZE], int output[N - KERNEL_SIZE + 1]) {
+    #pragma HLS ALLOCATION instances=mul limit=64 operation  // Limit multipliers to at most 2
 
-
-void conv1d(const float *in, float *out, const float *kernel, 
-            int in_size, int kernel_size, int stride) {
-#pragma HLS INTERFACE m_axi port=in      offset=slave bundle=gmem
-#pragma HLS INTERFACE m_axi port=out     offset=slave bundle=gmem
-#pragma HLS INTERFACE m_axi port=kernel  offset=slave bundle=gmem
-#pragma HLS INTERFACE s_axilite port=in_size     bundle=control
-#pragma HLS INTERFACE s_axilite port=kernel_size bundle=control
-#pragma HLS INTERFACE s_axilite port=stride      bundle=control
-#pragma HLS INTERFACE s_axilite port=return      bundle=control
-
-    // Compute the number of output elements
-    int out_size = (in_size - kernel_size) / stride + 1;
-
-    // Outer loop over output elements
-    conv1d_loop: for (int i = 0; i < out_size; i++) {
-    #pragma HLS PIPELINE II=1
-        float acc = 0;
-        // Inner loop: perform convolution (MAC operations)
-        kernel_loop: for (int j = 0; j < kernel_size; j++) {
-            // Limit the multiplier (MAC unit) to a single instance
-            #pragma HLS ALLOCATION instances=mul limit=1 operation
-            float product = in[i * stride + j] * kernel[j];
-            acc += product;
+    // Loop over each valid output index
+    // #pragma HLS PIPELINE off
+    for (int i = 0; i < N - KERNEL_SIZE + 1; i++) {
+        int sum = 0;
+        // Convolve the kernel with the input data
+        for (int j = 0; j < KERNEL_SIZE; j++) {
+            // #pragma HLS UNROLL factor=1
+            sum += input[i+j] * kernel[j];
         }
-        out[i] = acc;
+        output[i] = sum;
     }
 }
-
-
-// }
-
