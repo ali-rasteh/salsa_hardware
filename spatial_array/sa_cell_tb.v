@@ -1,51 +1,62 @@
-`include "sa_cell.v"
+`include "sa_cell.sv"
 
 `timescale 1ns / 1ns
 
 
 module sa_cell_tb;
     // Parameters
-    parameter DATA_WIDTH = 32;
-    parameter MODE_WIDTH = 1;
-    parameter CTRL_WIDTH = 3;
-    parameter MOVE_BUFF_DEPTH = 16;
+    parameter DATA_WIDTH = 16;
+    parameter CTRL_WIDTH = 9;
+    parameter WD_BUFFER_DEPTH = 16;
+    parameter INPUT_BUFFER_DEPTH = 2;
+    parameter PARTIALS_BUFFER_DEPTH = 2;
 
     // Inputs
     reg clk;
     reg rst;
-    reg [MODE_WIDTH-1:0] mode;
     reg [CTRL_WIDTH-1:0] ctrl;
-    reg [DATA_WIDTH-1:0] left;
-    reg [DATA_WIDTH-1:0] up;
-    reg [DATA_WIDTH-1:0] move_buff_in;
-    reg move_buff_in_valid;
+    reg [DATA_WIDTH-1:0] left_in;
+    reg [DATA_WIDTH-1:0] result_in;
+    reg [DATA_WIDTH-1:0] data_in;
+    reg data_in_valid;
+
+    reg [$clog2(WD_BUFFER_DEPTH)-1:0] wd_buffer_pop_index;
+    reg [$clog2(INPUT_BUFFER_DEPTH)-1:0] input_buffer_pop_index;
+    reg [$clog2(PARTIALS_BUFFER_DEPTH)-1:0] partials_buffer_pop_index;
+    reg add_sub;               // 0 for addition, 1 for subtraction
 
     // Outputs
-    wire [DATA_WIDTH-1:0] right;
-    wire [DATA_WIDTH-1:0] down;
-    wire [DATA_WIDTH-1:0] move_buff_out;
-    wire move_buff_out_valid;
+    wire [DATA_WIDTH-1:0] right_out;
+    wire [DATA_WIDTH-1:0] result_out;
+    wire [DATA_WIDTH-1:0] data_out;
+    wire data_out_valid;
 
     // Instantiate the sa_cell module
     sa_cell #(
         .DATA_WIDTH(DATA_WIDTH),
-        .MODE_WIDTH(MODE_WIDTH),
         .CTRL_WIDTH(CTRL_WIDTH),
-        .MOVE_BUFF_DEPTH(MOVE_BUFF_DEPTH)
+        .WD_BUFFER_DEPTH(WD_BUFFER_DEPTH),
+        .INPUT_BUFFER_DEPTH(INPUT_BUFFER_DEPTH),
+        .PARTIALS_BUFFER_DEPTH(PARTIALS_BUFFER_DEPTH)
     ) uut (
         .clk(clk),
         .rst(rst),
-        .mode(mode),
-        .ctrl(ctrl),
-        .left(left),
-        .up(up),
-        .move_buff_in(move_buff_in),
-        .move_buff_in_valid(move_buff_in_valid),
 
-        .right(right),
-        .down(down),
-        .move_buff_out(move_buff_out),
-        .move_buff_out_valid(move_buff_out_valid)
+        .ctrl(ctrl),
+        .left_in(left_in),
+        .result_in(result_in),
+        .data_in(data_in),
+        .data_in_valid(data_in_valid),
+
+        .wd_buffer_pop_index(wd_buffer_pop_index),
+        .input_buffer_pop_index(input_buffer_pop_index),
+        .partials_buffer_pop_index(partials_buffer_pop_index),
+        .add_sub(add_sub),
+
+        .right_out(right_out),
+        .result_out(result_out),
+        .data_out(data_out),
+        .data_out_valid(data_out_valid)
     );
 
     // Clock generation
@@ -53,40 +64,43 @@ module sa_cell_tb;
 
     // Testbench logic
     initial begin
-        $monitor("clk=%0d rst=%0d mode=%0d ctrl=%0d left=%0h up=%0h move_buff_in=%0h move_buff_in_valid=%0d right=%0h down=%0h move_buff_out=%0h move_buff_out_valid=%0d", clk, rst, mode, ctrl, left, up, move_buff_in, move_buff_in_valid, right, down, move_buff_out, move_buff_out_valid);
+        $monitor("clk=%0d rst=%0d ctrl=%0d left_in=%0h result_in=%0h data_in=%0h data_in_valid=%0d right_out=%0h result_out=%0h data_out=%0h data_out_valid=%0d", clk, rst, ctrl, left_in, result_in, data_in, data_in_valid, right_out, result_out, data_out, data_out_valid);
         
         // Initialize inputs
         clk = 0;
         rst = 1;
-        mode = 0;
+
         ctrl = 0;
-        left = 0;
-        up = 0;
-        move_buff_in = 0;
-        move_buff_in_valid = 0;
+        left_in = 0;
+        result_in = 0;
+        data_in = 0;
+        data_in_valid = 0;
+
+        wd_buffer_pop_index = 0;
+        input_buffer_pop_index = 0;
+        partials_buffer_pop_index = 0;
+        add_sub = 0;
 
         // Reset the design
         #10;
         rst = 0;
 
         // Test case 1: Accumulation mode
-        mode = 0;
-        left = 32'h3f800000; // 1.0 in IEEE 754
-        up = 32'h40000000; // 2.0 in IEEE 754
-        move_buff_in = 32'h40400000; // 3.0 in IEEE 754
-        move_buff_in_valid = 1;
+        left_in = 16'h3C00; // 1.0 in IEEE 754 (16-bit)
+        result_in = 16'h4000; // 2.0 in IEEE 754 (16-bit)
+        data_in = 16'h4200; // 3.0 in IEEE 754 (16-bit)
+        data_in_valid = 1;
         #10;
-        move_buff_in_valid = 0;
+        data_in_valid = 0;
         #50;
 
         // Test case 2: Element-wise mode
-        mode = 1;
-        left = 32'h3f800000; // 1.0 in IEEE 754
-        up = 32'h40000000; // 2.0 in IEEE 754
-        move_buff_in = 32'h40400000; // 3.0 in IEEE 754
-        move_buff_in_valid = 1;
+        left_in = 16'h3C00; // 1.0 in IEEE 754 (16-bit)
+        result_in = 16'h4000; // 2.0 in IEEE 754 (16-bit)
+        data_in = 16'h4200; // 3.0 in IEEE 754 (16-bit)
+        data_in_valid = 1;
         #10;
-        move_buff_in_valid = 0;
+        data_in_valid = 0;
         #50;
 
         // End simulation
