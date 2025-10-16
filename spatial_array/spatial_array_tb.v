@@ -1,4 +1,4 @@
-`include "sa_cell.v"
+`include "sa_cell.sv"
 
 `timescale 1ns / 1ns
 
@@ -18,7 +18,7 @@ module sa_cell_tb;
     reg [DATA_WIDTH-1:0] left_in;
     reg [DATA_WIDTH-1:0] result_in;
     reg [DATA_WIDTH-1:0] data_in;
-    reg data_in_valid;
+    reg data_in_vali d;
 
     reg [$clog2(WD_BUFFER_DEPTH)-1:0] wd_buffer_pop_index;
     reg [$clog2(INPUT_BUFFER_DEPTH)-1:0] input_buffer_pop_index;
@@ -64,12 +64,7 @@ module sa_cell_tb;
 
     // Testbench logic
     initial begin
-        $monitor("============= clk=%0d rst=%0d =============\n"
-                , clk, rst,
-                "ctrl=%0d, wd_buffer_pop_index=%0d, input_buffer_pop_index=%0d, partials_buffer_pop_index=%0d, add_sub=%0d \n",
-                ctrl, wd_buffer_pop_index, input_buffer_pop_index, partials_buffer_pop_index, add_sub,
-                "left_in=%0h result_in=%0h data_in=%0h data_in_valid=%0d right_out=%0h result_out=%0h data_out=%0h data_out_valid=%0d \n",
-                left_in, result_in, data_in, data_in_valid, right_out, result_out, data_out, data_out_valid);
+        $monitor("clk=%0d rst=%0d ctrl=%0d left_in=%0h result_in=%0h data_in=%0h data_in_valid=%0d right_out=%0h result_out=%0h data_out=%0h data_out_valid=%0d", clk, rst, ctrl, left_in, result_in, data_in, data_in_valid, right_out, result_out, data_out, data_out_valid);
         
         // Initialize inputs
         clk = 0;

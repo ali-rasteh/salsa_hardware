@@ -2,7 +2,8 @@
 // Horizontal:  left_in  -> right_out  (west -> east)
 // Vertical:    data_*   and result_*  (north -> south)
 
-`include "sa_cell.sv"
+`include "sa_cell.v"
+`include "accumulator.v"
 
 `timescale 1ns / 1ns
 
@@ -11,7 +12,7 @@ module spatial_array_8x8 #(
     parameter DATA_WIDTH            = 16,
     parameter CTRL_WIDTH            = 9,
     parameter WD_BUFFER_DEPTH       = 16,
-    parameter INPUT_BUFFER_DEPTH    = 2,
+    parameter INPUT_BUFFER_DEPTH    = 4,
     parameter PARTIALS_BUFFER_DEPTH = 2
 )(
     input  logic clk,
@@ -23,6 +24,8 @@ module spatial_array_8x8 #(
     input  logic [$clog2(INPUT_BUFFER_DEPTH)-1:0]     input_buffer_pop_index    [0:7][0:7],
     input  logic [$clog2(PARTIALS_BUFFER_DEPTH)-1:0]  partials_buffer_pop_index [0:7][0:7],
     input  logic                                      add_sub                   [0:7][0:7],
+    input  logic                                      rst_accumulator           [0:7], // Per-column accumulator reset
+    input  logic                                      enable_accumulator        [0:7], // Per-column accumulator enable
 
     // -------- Array boundary inputs --------
     // West edge (feeds left_in of column 0, each row has its own lane)
@@ -121,12 +124,28 @@ module spatial_array_8x8 #(
         for (rr = 0; rr < 8; rr++) begin : EAST_BOUNDARY
             assign east_right_out[rr] = h_left_to_right[rr][8];
         end
+
         // South edge collects bottom row outputs
         for (cc = 0; cc < 8; cc++) begin : SOUTH_BOUNDARY
-            assign south_data_out[cc]       = v_data[8][cc];
+            // Pass-through result and valid from the southern edge of the grid
+            assign south_result_out[cc]       = v_result[8][cc];
             assign south_data_out_valid[cc] = v_data_valid[8][cc];
-            assign south_result_out[cc]     = v_result[8][cc];
+
+            // Accumulate the southern-most (bottom row) data per column before exposing it
+            accumulator_IEEE754_16bit #(
+                .WIDTH(DATA_WIDTH)
+            ) u_accum_south (
+                .clk    (clk),
+                .reset  (rst_accumulator[cc]),            // Active-high reset
+                .enable (enable_accumulator[cc]),         // Accumulate only when data is valid
+                .in     (v_data[8][cc]),     // Input from the bottom of the column
+                .sum_out(south_data_out[cc]) // Output drives the south_data_out
+            );
         end
+
     endgenerate
+
+
+
 
 endmodule
