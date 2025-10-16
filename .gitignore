@@ -10,7 +10,8 @@ sim/
 *.mpf
 *.mti
 *.out
-
+*.log
+*.zip
 
 # Others
 test.py
