@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import zipfile
-from adjustText import adjust_text
+# from adjustText import adjust_text
 
 
 
@@ -40,18 +40,25 @@ def _save_show(fig, filename):
     plt.close(fig)
     return str(filepath)
 
-def _grouped_bar(ax, categories, series_a, series_b, label_a, label_b, title, ylabel):
+
+def _grouped_bar(ax, categories, series_a, series_b, label_a, label_b, title, ylabel, log_scale=False):
     x = np.arange(len(categories))
     width = 0.38
     ax.bar(x - width/2, series_a, width, label=label_a)
     ax.bar(x + width/2, series_b, width, label=label_b)
     ax.set_xticks(x)
-    ax.set_xticklabels(categories, rotation=0)
-    ax.set_title(title)
-    ax.set_ylabel(ylabel)
-    ax.legend()
+    ax.tick_params(axis='x')
+    ax.set_xticklabels(categories, rotation=0, fontsize=9, fontweight="bold")
+    ax.set_title(title, fontsize=16, fontweight="bold")
+    ax.set_ylabel(ylabel, fontsize=12)
+    ax.legend(fontsize=12)
 
-def _bar_two_methods(df_metric: pd.DataFrame, metric_col: str, metric_name: str, filename_prefix: str):
+    # Apply log scale if requested
+    if log_scale:
+        ax.set_yscale('log')
+
+
+def _bar_two_methods(df_metric: pd.DataFrame, metric_col: str, metric_name: str, filename_prefix: str, log_scale=False):
     # Expect df_metric to have exactly two methods per kernel
     kernels = sorted(df_metric["Kernel"].unique().tolist())
     methods = sorted(df_metric["Method"].unique().tolist())
@@ -80,7 +87,7 @@ def _bar_two_methods(df_metric: pd.DataFrame, metric_col: str, metric_name: str,
         vals1.append(v1.values[0] if len(v1) else np.nan)
 
     fig, ax = plt.subplots()
-    _grouped_bar(ax, kernels, vals0, vals1, m0, m1, f"{metric_name} by Kernel", metric_name)
+    _grouped_bar(ax, kernels, vals0, vals1, m0, m1, f"{metric_name} by Kernel", metric_name, log_scale=log_scale)
     path = _save_show(fig, f"{filename_prefix}.png")
     saved_files.append(path)
 
@@ -118,7 +125,7 @@ def area_vs_throughput_scatter(df: pd.DataFrame, filename="scatter_area_vs_throu
         d = df[df["Method"] == m]
         sizes = (d["Power_mW"].fillna(0) + 1e-12)  # avoid zeros
         # scale bubble size
-        size_scale = 600.0 / (np.nanmax(sizes) if np.nanmax(sizes) > 0 else 1.0)
+        size_scale = 800.0 / (np.nanmax(sizes) if np.nanmax(sizes) > 0 else 1.0)
         # marker = markers[i % len(markers)]
         marker = markers[0]
         sc = ax.scatter(d["Area_units"], d["Throughput_gops_per_s"], s=sizes * size_scale, marker=marker, label=m)
@@ -134,11 +141,12 @@ def area_vs_throughput_scatter(df: pd.DataFrame, filename="scatter_area_vs_throu
                     # zorder=3
                 )
                 texts.append(t)
-                
-    ax.set_xlabel("Area (units)", fontsize=14)
-    ax.set_ylabel("Throughput (ops/s)", fontsize=14)
-    ax.set_title("Trade-off: Area vs Throughput (bubble size = Power)", fontsize=16)
-    ax.legend(fontsize=12)
+
+    ax.set_xlabel("Area (mm²)", fontsize=14)
+    ax.set_ylabel("Throughput (Gops/s)", fontsize=14)
+    ax.set_title("Trade-off: Area vs Throughput (bubble size = Power)", fontsize=15, fontweight="bold")
+    ax.legend(fontsize=13, labelspacing=1.0, handletextpad=0.8, borderaxespad=0.6)
+    ax.tick_params(axis='both', labelsize=12)
     ax.margins(0.06)
     
     # # nudge labels to avoid overlaps; add subtle leader lines
@@ -159,21 +167,18 @@ def latency_vs_energy_scatter(df: pd.DataFrame, filename="scatter_latency_vs_ene
 
     for i, m in enumerate(methods):
         d = df[df["Method"] == m]
-        sizes = (d["Power_mW"].fillna(0) + 1e-12)  # avoid zeros
-        # scale bubble size
-        size_scale = 600.0 / (np.nanmax(sizes) if np.nanmax(sizes) > 0 else 1.0)
         # marker = markers[i % len(markers)]
         marker = markers[0]
-
-        ax.scatter(d["Latency_cycles"], d["Energy_per_Op_J"], marker=markers[i % len(markers)], label=m)
+        ax.scatter(d["Latency_cycles"] / 1e3, d["Energy_per_Op_J"], marker=marker, label=m)
         for _, row in d.iterrows():
             if not (pd.isna(row["Latency_cycles"]) or pd.isna(row["Energy_per_Op_J"])):
-                ax.annotate(str(row["Kernel"]), (row["Latency_cycles"], row["Energy_per_Op_J"]), textcoords="offset points", xytext=(5,5), fontsize=8)
-    
-    ax.set_xlabel("Latency (ns)", fontsize=14)
+                ax.annotate(str(row["Kernel"]), (row["Latency_cycles"] / 1e3, row["Energy_per_Op_J"]), textcoords="offset points", xytext=(5,5), fontsize=8)
+
+    ax.set_xlabel("Latency (µs)", fontsize=14, labelpad=10)
     ax.set_ylabel("Energy per Op (J)", fontsize=14)
-    ax.set_title("Energy-Centric Lens: Latency vs Energy per Op", fontsize=16)
+    ax.set_title("Energy-Centric Lens: Latency vs Energy per Op", fontsize=15, fontweight="bold")
     ax.legend(fontsize=12)
+    ax.tick_params(axis='both', labelsize=12)
     ax.margins(0.06)
 
     path = _save_show(fig, filename)
@@ -183,10 +188,10 @@ def energy_and_efficiency_bars(df: pd.DataFrame):
     # Energy/op
     _bar_two_methods(df, "Energy_per_Op_J", "Energy per Op (J)", "bar_energy_per_op")
     # Perf/Area and Perf/Power
-    _bar_two_methods(df, "Perf_per_Area", "Performance per Area (ops/s per area)", "bar_perf_per_area")
-    _bar_two_methods(df, "Perf_per_Power", "Performance per Power (ops/s/W)", "bar_perf_per_power")
+    _bar_two_methods(df, "Perf_per_Area", "Performance per Area (Gops/s per mm²)", "bar_perf_per_area")
+    _bar_two_methods(df, "Perf_per_Power", "Performance per Power (Gops/s/mW)", "bar_perf_per_power")
     # EDP
-    _bar_two_methods(df, "EDP", "Energy-Delay Product (J·s)", "bar_edp")
+    _bar_two_methods(df, "EDP", "Energy-Delay Product (J·s)", "bar_edp", log_scale=True)
 
 def radar_chart_per_kernel(df: pd.DataFrame):
     # Radar chart comparing methods for each kernel
@@ -194,7 +199,7 @@ def radar_chart_per_kernel(df: pd.DataFrame):
     metrics = ["Latency_cycles", "Throughput_gops_per_s", "Area_units", "Power_mW"]
     label_map = {
         "Latency_cycles": "Latency",
-        "Throughput_gops_per_s": "Throughput",
+        "Throughput_gops_per_s": "1/Throughput",
         "Area_units": "Area",
         "Power_mW": "Power"
     }
@@ -212,8 +217,14 @@ def radar_chart_per_kernel(df: pd.DataFrame):
         if np.allclose(vmin, vmax) or np.isnan(vmin) or np.isnan(vmax):
             # If no variation or NaNs, default to 0.5
             return np.ones_like(arr) * 0.5
-        base = (arr - vmin) / (vmax - vmin)
-        return base if higher_is_better else 1.0 - base
+
+        # base = (arr - vmin) / (vmax - vmin)
+        # return base if higher_is_better else 1.0 - base
+        if higher_is_better:
+            base = arr/vmax
+        else:
+            base = vmin/arr
+        return base
 
     for k in kernels:
         dk = df[df["Kernel"] == k]
@@ -224,9 +235,9 @@ def radar_chart_per_kernel(df: pd.DataFrame):
         for met in metrics:
             aligned = [dk[dk["Method"] == m][met].values[0] if not dk[dk["Method"] == m].empty else np.nan for m in methods]
             if met == "Throughput_gops_per_s":
-                norm = normalize(aligned, higher_is_better=True)
-            else:
                 norm = normalize(aligned, higher_is_better=False)
+            else:
+                norm = normalize(aligned, higher_is_better=True)
             values_per_metric.append(norm)
 
         # angles
@@ -244,10 +255,12 @@ def radar_chart_per_kernel(df: pd.DataFrame):
             ax.fill(angles, vals, alpha=0.15)
 
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels([label_map[x] for x in metrics])
+        ax.set_xticklabels([label_map[x] for x in metrics], fontsize=11)
+        ax.tick_params(axis='x', pad=10)
+        # ax.set_ylim(0, 1.15)
         ax.set_yticklabels([])
-        ax.set_title(f"Radar — {k} (normalized: 1=better)")
-        ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.1))
+        ax.set_title(f"Radar — {k} (normalized)", fontsize=14, fontweight="bold")
+        ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.1), fontsize=10)
         path = _save_show(fig, f"radar_{k}.png")
         saved_files.append(path)
 
@@ -276,9 +289,9 @@ if __name__ == "__main__":
     saved_files = []
 
     # Bar charts: Latency & Throughput
-    _bar_two_methods(df, "Latency_cycles", "Latency (Cycles)", "bar_latency")
+    _bar_two_methods(df, "Latency_cycles", "Latency (Cycles)", "bar_latency", log_scale=True)
     _bar_two_methods(df, "Throughput_gops_per_s", "Throughput (Gops/s)", "bar_throughput")
-    _bar_two_methods(df, "Area_units", "Area (mm^2)", "bar_area")
+    _bar_two_methods(df, "Area_units", "Area (mm²)", "bar_area")
     _bar_two_methods(df, "Power_mW", "Power (mW)", "bar_power")
 
     # Efficiency and energy-centric bar charts
