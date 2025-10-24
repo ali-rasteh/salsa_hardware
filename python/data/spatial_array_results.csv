@@ -1,0 +1,21 @@
+Kernel,Inputs,Type,Weights,Weights_Type,Latency,Utilization,Lower_Bound,Throughput,Power
+MatVec,"1024x4", complex_float,"4x1", complex_float,530,48.3,256,61.83,93.4
+MatVec,"1024x8", complex_float,"8x1", complex_float,1042,49.1,512,62.89,95
+MatVec,"1024x16", complex_float,"16x1", complex_float,2066,49.5,1024,63.44,95.7
+MatMat,"1024x4",float,"4x8",float,527,97.4,512,124.36,188
+MatMat,"1024x4",float,"4x16",float,1039,98.5,1024,126.15,191
+MatMat,"1024x8",float,"8x8",float,1039,98.5,1024,126.15,191
+MatMat,"1024x8",float,"8x16",float,2063,99.2,2048,127.07,192
+MatMat,"1024x16",float,"16x8",float,2063,99.2,2048,127.07,192
+MatMat,"1024x16",float,"16x16",float,4119,99.44,4096,127.28,192
+FIR,"1024x1",float,"32x1",float,464,48.27,224,61.79,93.4
+FIR,"1024x1", complex_float,"32x1", complex_float,912,98.2,894,125.47,190
+Matched,"1×1024x1", complex_float,"32x1", complex_float,2232,91.8,2050,117.56,48.4
+Matched,"8×1024x1", complex_float,"32x1", complex_float,18180,90.2,16400,115.46,180
+VectorMagSq,"512x1", complex_float,"512x1", complex_float,64,50,32,64,48.6
+VectorMagSq,"1024x1", complex_float,"1024x1", complex_float,128,50,64,64,48.6
+OuterProduct,"1024x8", complex_float,"1024x8", complex_float,4132,99.12,4096,126.88,192
+OuterProduct,"1024x32", complex_float,"1024x32", complex_float,65572,99.94,65536,127.93,193
+OuterProduct,"1024x64", complex_float,"1024x64", complex_float,262180,99.98,262144,127.98,193
+OuterProduct,"1024x128", complex_float,"1024x128", complex_float,1050000,99.98,1048000,127.98,193
+OuterProduct,"1024x512", complex_float,"1024x512", complex_float,16780000,99.99,16780000,127.99,193

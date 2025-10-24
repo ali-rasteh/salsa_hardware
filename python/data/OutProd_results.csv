@@ -1,0 +1,6 @@
+Inputs, Weights, Type, Latency, Throughput, Area, Power, Multipliers
+1024x8, 1024x8, complex_float, 8204, 63.91, 0.329577, 74.7, 32
+1024x32, 1024x32, complex_float, 131264, 63.91, 0.329577, 74.7, 32
+1024x64, 1024x64, complex_float, 525056, 63.91, 0.329577, 74.7, 32
+1024x128, 1024x128, complex_float, 2100224, 63.91, 0.329577, 74.7, 32
+1024x512, 1024x512, complex_float, 33603584, 63.91, 0.329577, 74.7, 32

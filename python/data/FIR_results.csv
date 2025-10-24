@@ -1,0 +1,3 @@
+Inputs, Weights, Type, Latency, Throughput, Area, Power, Multipliers
+1024x1, 32x1, float, 2150, 29.53, 0.400367, 107.9, 16
+1024x1, 32x1, complex_float, 4160, 61.05, 0.464099, 107.2, 32

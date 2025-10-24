@@ -16,4 +16,4 @@ sim/
 # Others
 test.py
 vitis/
-python/data/*.png
+python/figs/*.png
