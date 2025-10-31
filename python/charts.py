@@ -17,7 +17,7 @@ spatial_array_avg_Power = 193.0
 spatial_array_area_margin_coeff = 1.2  # 20% area margin for interconnect, etc.
 spatial_array_power_margin_coeff = 1.2  # 20% power margin for overheads
 
-spatial_array_static_power_fraction = 0.2  # fraction of power that is static/leakage
+spatial_array_static_power_fraction = 0.3  # fraction of power that is static/leakage
 spatial_array_size = (8,8)  # rows, cols
 
 MatVec_input_size = "1024x16"
@@ -103,13 +103,13 @@ def load_data() -> pd.DataFrame:
     df = df.dropna(subset=["Kernel", "Method"])
 
     for kernel, path in [
-            # ("MatMat", hls_matmat_results_path),
-            ("MatMat_sweep", hls_matmat_sweep_results_path),
-            # ("MatVec", hls_matvec_results_path),
-            # ("FIR", hls_fir_results_path),
-            # ("OuterProduct", hls_outerproduct_results_path),
-            # ("VectorMagSq", hls_vecmagsq_results_path),
-            ("VectorMagSq_sweep", hls_vecmagsq_sweep_results_path),
+            ("MatMat", hls_matmat_results_path),
+            # ("MatMat_sweep", hls_matmat_sweep_results_path),
+            ("MatVec", hls_matvec_results_path),
+            ("FIR", hls_fir_results_path),
+            ("OuterProduct", hls_outerproduct_results_path),
+            ("VectorMagSq", hls_vecmagsq_results_path),
+            # ("VectorMagSq_sweep", hls_vecmagsq_sweep_results_path),
         ]:
         if os.path.exists(path):
             df_hls = pd.read_csv(path)
