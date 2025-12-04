@@ -104,11 +104,12 @@ def load_data() -> pd.DataFrame:
 
     for kernel, path in [
             ("MatMat", hls_matmat_results_path),
-            # ("MatMat_sweep", hls_matmat_sweep_results_path),
             ("MatVec", hls_matvec_results_path),
             ("FIR", hls_fir_results_path),
             ("OuterProduct", hls_outerproduct_results_path),
             ("VectorMagSq", hls_vecmagsq_results_path),
+            
+            # ("MatMat_sweep", hls_matmat_sweep_results_path),
             # ("VectorMagSq_sweep", hls_vecmagsq_sweep_results_path),
         ]:
         if os.path.exists(path):
@@ -277,7 +278,8 @@ def _bar_two_methods(df_metric: pd.DataFrame, metric_col: str, metric_name: str,
             ax.set_xticklabels(kernels)
             ax.set_title(f"{metric_name} - {m}")
             ax.set_ylabel(metric_name)
-            path = _save_show(fig, f"{filename_prefix}_{m}.png")
+            # path = _save_show(fig, f"{filename_prefix}_{m}.png")
+            path = _save_show(fig, f"{filename_prefix}_{m}.pdf")
             saved_files.append(path)
         return
 
@@ -292,7 +294,8 @@ def _bar_two_methods(df_metric: pd.DataFrame, metric_col: str, metric_name: str,
 
     fig, ax = plt.subplots()
     _grouped_bar(ax, kernels, vals0, vals1, m0, m1, f"{metric_name} by Kernel", metric_name, log_scale=log_scale)
-    path = _save_show(fig, f"{filename_prefix}.png")
+    # path = _save_show(fig, f"{filename_prefix}.png")
+    path = _save_show(fig, f"{filename_prefix}.pdf")
     saved_files.append(path)
 
 def _jitter_duplicates(df, xcol, ycol, frac=0.005):
@@ -314,7 +317,7 @@ def _jitter_duplicates(df, xcol, ycol, frac=0.005):
         out.loc[idx, ycol] = out.loc[idx, ycol].values + r_y * np.sin(angles)
     return out
 
-def area_vs_throughput_scatter(df: pd.DataFrame, filename="scatter_area_vs_throughput.png"):
+def area_vs_throughput_scatter(df: pd.DataFrame, filename="scatter_area_vs_throughput.pdf"):
     fig, ax = plt.subplots()
     
     # — optional: jitter perfectly-identical coordinates so you can see duplicates —
@@ -364,7 +367,7 @@ def area_vs_throughput_scatter(df: pd.DataFrame, filename="scatter_area_vs_throu
     path = _save_show(fig, filename)
     saved_files.append(path)
 
-def latency_vs_energy_scatter(df: pd.DataFrame, filename="scatter_latency_vs_energy.png"):
+def latency_vs_energy_scatter(df: pd.DataFrame, filename="scatter_latency_vs_energy.pdf"):
     fig, ax = plt.subplots()
 
     methods = sorted(df["Method"].unique().tolist())
@@ -472,7 +475,8 @@ def radar_chart_per_kernel(df: pd.DataFrame):
         ax.set_yticklabels([])
         ax.set_title(f"{k} (normalized)", fontsize=16, fontweight="bold")
         ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.1), fontsize=14)
-        path = _save_show(fig, f"radar_{k}.png")
+        # path = _save_show(fig, f"radar_{k}.png")
+        path = _save_show(fig, f"radar_{k}.pdf")
         saved_files.append(path)
 
 def make_zip(zip_name="kernel_charts.zip"):

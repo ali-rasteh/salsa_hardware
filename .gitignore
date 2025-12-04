@@ -17,3 +17,4 @@ sim/
 test.py
 vitis/
 python/figs/*.png
+python/figs/*
